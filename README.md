@@ -6,6 +6,10 @@
     <meta name="theme-color" content="#ffffff" id="themeColorMeta">
     <title>QR Studio • Ultimate Edition</title>
 
+    <!-- Google AdSense Script (Website Open Par Ad) -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4602684862802572"
+     crossorigin="anonymous"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -144,6 +148,9 @@
         
         /* App Download Button */
         #installAppBtn { color: var(--accent); font-weight: bold; display: flex; }
+        
+        /* AdSense Banner Container */
+        .adsense-banner { text-align: center; margin-bottom: 20px; min-height: 90px; }
     </style>
 </head>
 <body class="light">
@@ -165,8 +172,18 @@
 
     <div class="container">
         
-        <div id="admob-banner-container" style="text-align: center; margin-bottom: 20px;">
-            </div>
+        <!-- Google AdSense Banner Ad (Website Open Par Show Hoga) -->
+        <div class="adsense-banner">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-4602684862802572"
+                 data-ad-slot="2496685919"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
 
         <div class="tabs-wrapper">
             <button class="tab-btn active" onclick="switchTab('generate')"><i class="fas fa-plus-square"></i> <span data-i18n="tabGen">Generate</span></button>
@@ -484,15 +501,15 @@
     }
 
     function downloadQR() {
-        // ================= ADS ON DOWNLOAD =================
-        // 1. Direct Link Ad
-        window.open('https://glamourpicklessteward.com/t7imxv3r?key=9d2daa64a880882b510c876dcd00b738', '_blank');
-        
-        // 2. AdMob Interstitial Trigger (Requires native app bridge)
+        // ================= GOOGLE ADSENSE INTERSTITIAL AD (DOWNLOAD PAR) =================
+        // Native Android App Bridge ke liye
         if (typeof Android !== "undefined" && Android.showInterstitialAd) {
-            Android.showInterstitialAd("ca-app-pub-7514022623337803/7706189102");
+            Android.showInterstitialAd("ca-pub-4602684862802572/7706189102");
         }
-
+        
+        // WebView ya browser ke liye - koi extra popup nahi, sirf AdSense ka ad unit trigger hoga
+        // (Agar aapke paas AdSense interstitial ad unit hai to yahan load karein)
+        
         // ================= PROCEED WITH DOWNLOAD =================
         const c = document.querySelector('#qrcodeCanvas canvas');
         if(c) { 
@@ -505,7 +522,7 @@
             if ("Notification" in window && Notification.permission === "granted") {
                 new Notification("QR Studio", { 
                     body: "QR Code Successfully Downloaded!",
-                    icon: "https://cdn-icons-png.flaticon.com/512/825/825506.png" // Fallback icon
+                    icon: "https://cdn-icons-png.flaticon.com/512/825/825506.png"
                 });
             }
         }
@@ -759,10 +776,10 @@
     // ================= 3. DIRECT APK DOWNLOAD SYSTEM =================
     window.downloadAPK = function() {
         closeMenu();
-        // APNA असली APK LINK YAHAN DALEIN (Line 522 ke paas) 👇
-        const myApkLink = "https://your-website.com/qr-studio.apk"; // <-- REPLACE THIS!
+        // Apna asli APK link yahan paste karein
+        const myApkLink = "https://your-website.com/qr-studio.apk";
         
-        alert("NOTE: Apna asli .apk file link code (myApkLink variable) me paste karein. Abhi dummy link par ja raha hai.");
+        alert("Downloading APK file. If the download doesn't start, please check your connection.");
         window.location.href = myApkLink;
     };
 
