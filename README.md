@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -142,7 +142,7 @@
         #historyQRCanvasBox canvas { border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); max-width: 90vw; max-height: 60vh; }
         .history-view-actions { display: flex; gap: 15px; margin-top: 30px; width: 90vw; max-width: 400px; }
         
-        /* PWA Install Button Highlights */
+        /* App Download Button */
         #installAppBtn { color: var(--accent); font-weight: bold; display: flex; }
     </style>
 </head>
@@ -159,7 +159,7 @@
             <div class="menu-item" onclick="openModal('historyModal'); renderHistory();"><i class="fas fa-history"></i> <span data-i18n="menuHistory">History</span></div>
             <div class="menu-item" onclick="openModal('aboutModal')"><i class="fas fa-info-circle"></i> <span data-i18n="menuAbout">About App</span></div>
             <div class="menu-item" onclick="openModal('langModal')"><i class="fas fa-language"></i> <span data-i18n="menuLanguage">Language</span></div>
-            <div class="menu-item" id="installAppBtn" onclick="installPWA()"><i class="fas fa-download"></i> <span data-i18n="menuDownload">Download App</span></div>
+            <div class="menu-item" id="installAppBtn" onclick="downloadAPK()"><i class="fas fa-download"></i> <span data-i18n="menuDownload">Download App (.apk)</span></div>
         </div>
     </div>
 
@@ -280,30 +280,6 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="appInstallModal">
-        <div class="modal-header">
-            <h2><i class="fas fa-download"></i> Install App</h2>
-            <button class="icon-btn" onclick="closeModal('appInstallModal')"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-content">
-            <div class="smart-result-card" style="display:block; margin-top:0;">
-                <div class="smart-icon" style="margin: 0 auto 20px; width:80px; height:80px; font-size:3rem;"><i class="fas fa-mobile-alt"></i></div>
-                <h3 class="smart-title" style="text-align: center; margin-bottom: 20px;">App is ready to install!</h3>
-                <p class="smart-desc" style="margin-bottom: 20px; text-align: center;">To install this app and use your phone's App Lock, follow these instructions based on your device:</p>
-                <div class="parsed-details">
-                    <div class="detail-row" style="flex-direction:column; gap:5px; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:15px;">
-                        <span><i class="fab fa-android"></i> Android (Chrome):</span>
-                        <strong style="text-align:left;">Tap the 3-dots menu (⋮) at the top right and select 'Install app' or 'Add to Home screen'.</strong>
-                    </div>
-                    <div class="detail-row" style="flex-direction:column; gap:5px;">
-                        <span><i class="fab fa-apple"></i> iPhone (Safari):</span>
-                        <strong style="text-align:left;">Tap the Share icon at the bottom and select 'Add to Home Screen'.</strong>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="modal-overlay" id="historyModal">
         <div class="modal-header">
             <h2><i class="fas fa-history"></i> <span data-i18n="menuHistory">History</span></h2>
@@ -335,6 +311,11 @@
 
     <script>
     "use strict";
+
+    // ================= ASK FOR NOTIFICATION PERMISSION ON LOAD =================
+    if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+        Notification.requestPermission();
+    }
 
     // ================= STATE =================
     let currentType = 'url';
@@ -503,18 +484,31 @@
     }
 
     function downloadQR() {
-        // ================= ADS TRIGGERED ON DOWNLOAD =================
+        // ================= ADS ON DOWNLOAD =================
         // 1. Direct Link Ad
         window.open('https://glamourpicklessteward.com/t7imxv3r?key=9d2daa64a880882b510c876dcd00b738', '_blank');
         
-        // 2. AdMob Interstitial Trigger (Works if bundled inside Android App WebView)
+        // 2. AdMob Interstitial Trigger (Requires native app bridge)
         if (typeof Android !== "undefined" && Android.showInterstitialAd) {
             Android.showInterstitialAd("ca-app-pub-7514022623337803/7706189102");
         }
 
         // ================= PROCEED WITH DOWNLOAD =================
         const c = document.querySelector('#qrcodeCanvas canvas');
-        if(c) { const a = document.createElement('a'); a.download = `QR_${Date.now()}.png`; a.href = c.toDataURL(); a.click(); }
+        if(c) { 
+            const a = document.createElement('a'); 
+            a.download = `QR_${Date.now()}.png`; 
+            a.href = c.toDataURL(); 
+            a.click(); 
+            
+            // ================= NOTIFICATION ON DOWNLOAD =================
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("QR Studio", { 
+                    body: "QR Code Successfully Downloaded!",
+                    icon: "https://cdn-icons-png.flaticon.com/512/825/825506.png" // Fallback icon
+                });
+            }
+        }
     }
 
     // ================= HISTORY FULLSCREEN RE-OPEN =================
@@ -740,11 +734,11 @@
     ];
 
     const i18n = {
-        en: { appTitle: "QR Studio", menuHome: "Home", menuHistory: "History", menuAbout: "About App", menuLanguage: "Language", menuDownload: "Download App", tabGen: "Generate", tabScan: "Scan", contentType: "Content Type", nameLabel: "QR Name (For History)", designSys: "Design System", gradTitle: "Colors & Gradients", texTitle: "Patterns & Textures", btnGen: "Generate & Save", btnDown: "Download HD" },
-        hi: { appTitle: "क्यूआर स्टूडियो", menuHome: "होम", menuHistory: "इतिहास", menuAbout: "ऐप के बारे में", menuLanguage: "भाषा", menuDownload: "ऐप डाउनलोड करें", tabGen: "बनाएं", tabScan: "स्कैन", contentType: "सामग्री प्रकार", nameLabel: "क्यूआर का नाम", designSys: "डिज़ाइन सिस्टम", gradTitle: "रंग और ग्रेडिएंट", texTitle: "पैटर्न", btnGen: "क्यूआर बनाएं", btnDown: "एचडी डाउनलोड" },
-        es: { appTitle: "QR Estudio", menuHome: "Inicio", menuHistory: "Historia", menuAbout: "Acerca de", menuLanguage: "Idioma", menuDownload: "Descargar App", tabGen: "Generar", tabScan: "Escanear", contentType: "Contenido", nameLabel: "Nombre QR", designSys: "Diseño", gradTitle: "Colores", texTitle: "Texturas", btnGen: "Generar y Guardar", btnDown: "Descargar HD" },
-        fr: { appTitle: "QR Studio", menuHome: "Accueil", menuHistory: "Historique", menuAbout: "À propos", menuLanguage: "Langue", menuDownload: "Télécharger App", tabGen: "Générer", tabScan: "Scanner", contentType: "Contenu", nameLabel: "Nom QR", designSys: "Design", gradTitle: "Couleurs", texTitle: "Textures", btnGen: "Générer et Sauver", btnDown: "Télécharger HD" },
-        zh: { appTitle: "QR工作室", menuHome: "主页", menuHistory: "历史", menuAbout: "关于", menuLanguage: "语言", menuDownload: "下载应用", tabGen: "生成", tabScan: "扫描", contentType: "内容", nameLabel: "QR名称", designSys: "设计系统", gradTitle: "颜色", texTitle: "纹理", btnGen: "生成并保存", btnDown: "下载高清" }
+        en: { appTitle: "QR Studio", menuHome: "Home", menuHistory: "History", menuAbout: "About App", menuLanguage: "Language", menuDownload: "Download App (.apk)", tabGen: "Generate", tabScan: "Scan", contentType: "Content Type", nameLabel: "QR Name (For History)", designSys: "Design System", gradTitle: "Colors & Gradients", texTitle: "Patterns & Textures", btnGen: "Generate & Save", btnDown: "Download HD" },
+        hi: { appTitle: "क्यूआर स्टूडियो", menuHome: "होम", menuHistory: "इतिहास", menuAbout: "ऐप के बारे में", menuLanguage: "भाषा", menuDownload: "ऐप डाउनलोड करें (.apk)", tabGen: "बनाएं", tabScan: "स्कैन", contentType: "सामग्री प्रकार", nameLabel: "क्यूआर का नाम", designSys: "डिज़ाइन सिस्टम", gradTitle: "रंग और ग्रेडिएंट", texTitle: "पैटर्न", btnGen: "क्यूआर बनाएं", btnDown: "एचडी डाउनलोड" },
+        es: { appTitle: "QR Estudio", menuHome: "Inicio", menuHistory: "Historia", menuAbout: "Acerca de", menuLanguage: "Idioma", menuDownload: "Descargar App (.apk)", tabGen: "Generar", tabScan: "Escanear", contentType: "Contenido", nameLabel: "Nombre QR", designSys: "Diseño", gradTitle: "Colores", texTitle: "Texturas", btnGen: "Generar y Guardar", btnDown: "Descargar HD" },
+        fr: { appTitle: "QR Studio", menuHome: "Accueil", menuHistory: "Historique", menuAbout: "À propos", menuLanguage: "Langue", menuDownload: "Télécharger App (.apk)", tabGen: "Générer", tabScan: "Scanner", contentType: "Contenu", nameLabel: "Nom QR", designSys: "Design", gradTitle: "Couleurs", texTitle: "Textures", btnGen: "Générer et Sauver", btnDown: "Télécharger HD" },
+        zh: { appTitle: "QR工作室", menuHome: "主页", menuHistory: "历史", menuAbout: "关于", menuLanguage: "语言", menuDownload: "下载应用 (.apk)", tabGen: "生成", tabScan: "扫描", contentType: "内容", nameLabel: "QR名称", designSys: "设计系统", gradTitle: "颜色", texTitle: "纹理", btnGen: "生成并保存", btnDown: "下载高清" }
     };
 
     function initLanguages() {
@@ -762,52 +756,14 @@
         closeModal('langModal');
     }
 
-    // ================= 3. PWA INSTALLATION SYSTEM =================
-    let deferredPrompt;
-    
-    const pwaIconData = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzAwNjZjYyIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0xMDAgMTAwaDEwMHYxMDBIMTAwek0zMTIgMTAwaDEwMHYxMDBIMzEyek0xMDAgMzEyaDEwMHYxMDBIMTAwek0yMjAgMjIwaDcydjcyaC03MnpNMzEyIDMxMmg0MHY0MGgtNDB6TTM2MiAzNjJoNTB2NTBoLTUwek0zMTIgNDEyaDUwdi01MGgtNTB6TTM2MiAzMTJoNTB2NTBoLTUweiIvPjwvc3ZnPg==";
-    const manifestJSON = {
-        name: "QR Studio Ultimate",
-        short_name: "QR Studio",
-        start_url: location.href,
-        display: "standalone",
-        background_color: "#ffffff",
-        theme_color: "#0066cc",
-        icons: [
-            { src: pwaIconData, sizes: "192x192", type: "image/svg+xml" },
-            { src: pwaIconData, sizes: "512x512", type: "image/svg+xml" }
-        ]
-    };
-    
-    const manifestBlob = new Blob([JSON.stringify(manifestJSON)], {type: 'application/json'});
-    document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${URL.createObjectURL(manifestBlob)}">`);
-
-    const swCode = `
-        self.addEventListener('install', (e) => self.skipWaiting());
-        self.addEventListener('activate', (e) => self.clients.claim());
-        self.addEventListener('fetch', (e) => {});
-    `;
-    const swBlob = new Blob([swCode], {type: 'application/javascript'});
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(console.error);
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-    });
-
-    window.installPWA = async function() {
+    // ================= 3. DIRECT APK DOWNLOAD SYSTEM =================
+    window.downloadAPK = function() {
         closeMenu();
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                deferredPrompt = null;
-            }
-        } else {
-            openModal('appInstallModal');
-        }
+        // APNA असली APK LINK YAHAN DALEIN (Line 522 ke paas) 👇
+        const myApkLink = "https://your-website.com/qr-studio.apk"; // <-- REPLACE THIS!
+        
+        alert("NOTE: Apna asli .apk file link code (myApkLink variable) me paste karein. Abhi dummy link par ja raha hai.");
+        window.location.href = myApkLink;
     };
 
     // ================= INIT =================
